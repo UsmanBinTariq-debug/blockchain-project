@@ -1,0 +1,16 @@
+﻿{
+	"Path": "github.com/joho/godotenv",
+	"Version": "v1.5.1",
+	"Info": "C:\\Users\\hp\\go\\pkg\\mod\\cache\\download\\github.com\\joho\\godotenv\\@v\\v1.5.1.info",
+	"GoMod": "C:\\Users\\hp\\go\\pkg\\mod\\cache\\download\\github.com\\joho\\godotenv\\@v\\v1.5.1.mod",
+	"Zip": "C:\\Users\\hp\\go\\pkg\\mod\\cache\\download\\github.com\\joho\\godotenv\\@v\\v1.5.1.zip",
+	"Dir": "C:\\Users\\hp\\go\\pkg\\mod\\github.com\\joho\\godotenv@v1.5.1",
+	"Sum": "h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=",
+	"GoModSum": "h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=",
+	"Origin": {
+		"VCS": "git",
+		"URL": "https://github.com/joho/godotenv",
+		"Hash": "3fc4292b58a67b78e1dbb6e47b4879a6cc602ec4",
+		"Ref": "refs/tags/v1.5.1"
+	}
+}

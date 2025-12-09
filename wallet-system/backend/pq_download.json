@@ -1,0 +1,16 @@
+﻿{
+	"Path": "github.com/lib/pq",
+	"Version": "v1.10.9",
+	"Info": "C:\\Users\\hp\\go\\pkg\\mod\\cache\\download\\github.com\\lib\\pq\\@v\\v1.10.9.info",
+	"GoMod": "C:\\Users\\hp\\go\\pkg\\mod\\cache\\download\\github.com\\lib\\pq\\@v\\v1.10.9.mod",
+	"Zip": "C:\\Users\\hp\\go\\pkg\\mod\\cache\\download\\github.com\\lib\\pq\\@v\\v1.10.9.zip",
+	"Dir": "C:\\Users\\hp\\go\\pkg\\mod\\github.com\\lib\\pq@v1.10.9",
+	"Sum": "h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=",
+	"GoModSum": "h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=",
+	"Origin": {
+		"VCS": "git",
+		"URL": "https://github.com/lib/pq",
+		"Hash": "2a217b94f5ccd3de31aec4152a541b9ff64bed05",
+		"Ref": "refs/tags/v1.10.9"
+	}
+}

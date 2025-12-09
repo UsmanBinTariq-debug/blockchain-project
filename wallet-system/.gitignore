@@ -1,0 +1,14 @@
+bin/
+dist/
+.DS_Store
+node_modules/
+.env
+.env.local
+.env.*.local
+*.log
+.vscode/
+.idea/
+*.iml
+.coverage
+coverage/
+go.sum.bak

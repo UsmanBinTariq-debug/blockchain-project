@@ -1,0 +1,521 @@
+# COMPLETE DECENTRALIZED CRYPTO WALLET SYSTEM - AI GENERATION INSTRUCTIONS
+
+## PROJECT OVERVIEW
+Create a fully functional decentralized cryptocurrency wallet system with:
+- Custom blockchain implementation using UTXO model
+- Proof-of-Work mining with SHA-256 hashing
+- Digital signatures for transaction security
+- Auto Zakat deduction (2.5% monthly)
+- React frontend + Tailwind CSS
+- Go backend (strict requirement)
+- Supabase PostgreSQL serverless database
+- Complete user authentication with OTP
+- Wallet management with public/private key pairs
+- Real-time balance tracking via UTXO model
+- Transaction validation and logging system
+- Block explorer interface
+- Deployment without Docker
+
+## TECHNOLOGY STACK
+FRONTEND: React 18 + TypeScript + Tailwind CSS + Vite
+BACKEND: Go 1.21+ with Gin framework
+DATABASE: Supabase PostgreSQL (serverless)
+AUTH: Supabase Auth with OTP email verification
+DEPLOYMENT: Vercel (frontend) + Fly.io (backend)
+VERSION CONTROL: Git + GitHub
+
+## PROJECT STRUCTURE
+wallet-system/
+├── backend/
+│ ├── cmd/
+│ │ └── server/
+│ │ └── main.go
+│ ├── internal/
+│ │ ├── blockchain/
+│ │ │ ├── block.go
+│ │ │ ├── blockchain.go
+│ │ │ ├── proof_of_work.go
+│ │ │ └── transaction.go
+│ │ ├── crypto/
+│ │ │ ├── keys.go
+│ │ │ ├── signatures.go
+│ │ │ └── hashing.go
+│ │ ├── database/
+│ │ │ ├── models.go
+│ │ │ ├── supabase.go
+│ │ │ └── migrations/
+│ │ ├── api/
+│ │ │ ├── handlers.go
+│ │ │ ├── middleware.go
+│ │ │ └── routes.go
+│ │ ├── services/
+│ │ │ ├── wallet.go
+│ │ │ ├── transaction.go
+│ │ │ ├── zakat.go
+│ │ │ └── mining.go
+│ │ └── utils/
+│ │ ├── logger.go
+│ │ ├── validators.go
+│ │ └── scheduler.go
+│ ├── pkg/
+│ │ └── config/
+│ │ └── config.go
+│ ├── go.mod
+│ ├── go.sum
+│ └── .env.example
+├── frontend/
+│ ├── src/
+│ │ ├── components/
+│ │ │ ├── Dashboard/
+│ │ │ ├── Wallet/
+│ │ │ ├── Transactions/
+│ │ │ ├── BlockExplorer/
+│ │ │ ├── Auth/
+│ │ │ └── Shared/
+│ │ ├── pages/
+│ │ │ ├── Login.tsx
+│ │ │ ├── Register.tsx
+│ │ │ ├── Dashboard.tsx
+│ │ │ ├── SendMoney.tsx
+│ │ │ ├── BlockExplorer.tsx
+│ │ │ ├── Profile.tsx
+│ │ │ ├── Reports.tsx
+│ │ │ └── Admin.tsx
+│ │ ├── services/
+│ │ │ ├── api.ts
+│ │ │ ├── auth.ts
+│ │ │ ├── blockchain.ts
+│ │ │ └── wallet.ts
+│ │ ├── types/
+│ │ │ └── index.ts
+│ │ ├── utils/
+│ │ │ ├── constants.ts
+│ │ │ └── helpers.ts
+│ │ ├── App.tsx
+│ │ ├── main.tsx
+│ │ └── index.css
+│ ├── index.html
+│ ├── package.json
+│ ├── tsconfig.json
+│ ├── tailwind.config.js
+│ ├── postcss.config.js
+│ └── vite.config.ts
+├── database/
+│ ├── schema.sql
+│ ├── migrations/
+│ └── seed.sql
+├── scripts/
+│ ├── deploy.sh
+│ ├── setup.sh
+│ └── zakat_cron.go
+├── tests/
+│ ├── backend/
+│ └── frontend/
+├── docs/
+│ ├── API.md
+│ ├── ARCHITECTURE.md
+│ └── DEPLOYMENT.md
+├── .github/
+│ └── workflows/
+│ └── deploy.yml
+├── README.md
+├── .gitignore
+└── Makefile
+
+
+## DATABASE SCHEMA (Supabase PostgreSQL)
+Create these tables with exact structure:
+
+1. **users**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+email: VARCHAR(255) UNIQUE NOT NULL
+full_name: VARCHAR(255)
+cnic: VARCHAR(20) UNIQUE
+wallet_id: VARCHAR(64) UNIQUE NOT NULL
+public_key: TEXT NOT NULL
+encrypted_private_key: TEXT NOT NULL
+created_at: TIMESTAMP DEFAULT NOW()
+updated_at: TIMESTAMP DEFAULT NOW()
+is_verified: BOOLEAN DEFAULT FALSE
+otp_code: VARCHAR(6)
+otp_expires_at: TIMESTAMP
+
+
+2. **wallets**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+user_id: UUID REFERENCES users(id) ON DELETE CASCADE
+wallet_address: VARCHAR(64) UNIQUE NOT NULL
+balance_cache: DECIMAL(20,8) DEFAULT 0
+last_updated: TIMESTAMP DEFAULT NOW()
+zakat_deducted_this_month: BOOLEAN DEFAULT FALSE
+
+
+3. **utxos** (Unspent Transaction Outputs)
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+transaction_hash: VARCHAR(64) NOT NULL
+output_index: INTEGER NOT NULL
+wallet_address: VARCHAR(64) NOT NULL
+amount: DECIMAL(20,8) NOT NULL
+is_spent: BOOLEAN DEFAULT FALSE
+spent_in_transaction: VARCHAR(64)
+created_at: TIMESTAMP DEFAULT NOW()
+UNIQUE(transaction_hash, output_index)
+
+
+4. **blocks**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+block_index: INTEGER UNIQUE NOT NULL
+timestamp: BIGINT NOT NULL
+previous_hash: VARCHAR(64) NOT NULL
+hash: VARCHAR(64) UNIQUE NOT NULL
+nonce: BIGINT NOT NULL
+merkle_root: VARCHAR(64)
+difficulty: INTEGER DEFAULT 4
+mined_by: VARCHAR(64)
+created_at: TIMESTAMP DEFAULT NOW()
+
+
+5. **transactions**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+transaction_hash: VARCHAR(64) UNIQUE NOT NULL
+block_hash: VARCHAR(64) REFERENCES blocks(hash)
+sender_wallet: VARCHAR(64) NOT NULL
+receiver_wallet: VARCHAR(64) NOT NULL
+amount: DECIMAL(20,8) NOT NULL
+fee: DECIMAL(20,8) DEFAULT 0
+note: TEXT
+signature: TEXT NOT NULL
+status: VARCHAR(20) DEFAULT 'pending'
+created_at: TIMESTAMP DEFAULT NOW()
+transaction_type: VARCHAR(20) DEFAULT 'transfer'
+
+
+6. **zakat_transactions**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+wallet_address: VARCHAR(64) NOT NULL
+amount: DECIMAL(20,8) NOT NULL
+zakat_percentage: DECIMAL(5,2) DEFAULT 2.5
+transaction_hash: VARCHAR(64) REFERENCES transactions(transaction_hash)
+month_year: VARCHAR(7) NOT NULL
+created_at: TIMESTAMP DEFAULT NOW()
+
+
+7. **system_logs**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+log_type: VARCHAR(50) NOT NULL
+message: TEXT NOT NULL
+wallet_address: VARCHAR(64)
+ip_address: INET
+user_agent: TEXT
+created_at: TIMESTAMP DEFAULT NOW()
+
+
+8. **beneficiaries**
+id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
+user_id: UUID REFERENCES users(id) ON DELETE CASCADE
+beneficiary_wallet_id: VARCHAR(64) NOT NULL
+nickname: VARCHAR(100)
+created_at: TIMESTAMP DEFAULT NOW()
+UNIQUE(user_id, beneficiary_wallet_id)
+
+
+## BACKEND IMPLEMENTATION REQUIREMENTS
+
+### 1. BLOCKCHAIN MODULE (Go)
+```go
+// Block Structure
+type Block struct {
+    Index        int64         `json:"index"`
+    Timestamp    int64         `json:"timestamp"`
+    Transactions []Transaction `json:"transactions"`
+    PreviousHash string        `json:"previous_hash"`
+    Nonce        int64         `json:"nonce"`
+    Hash         string        `json:"hash"`
+    MerkleRoot   string        `json:"merkle_root"`
+    Difficulty   int           `json:"difficulty"`
+}
+
+// Transaction Structure
+type Transaction struct {
+    ID            string    `json:"id"`
+    SenderWallet  string    `json:"sender_wallet"`
+    ReceiverWallet string   `json:"receiver_wallet"`
+    Amount        float64   `json:"amount"`
+    Fee           float64   `json:"fee"`
+    Note          string    `json:"note"`
+    Timestamp     int64     `json:"timestamp"`
+    Signature     string    `json:"signature"`
+    PublicKey     string    `json:"public_key"`
+    UTXOInputs    []UTXO    `json:"utxo_inputs"`
+    UTXOOutputs   []UTXO    `json:"utxo_outputs"`
+}
+
+// UTXO Structure
+type UTXO struct {
+    TransactionHash string  `json:"transaction_hash"`
+    OutputIndex     int     `json:"output_index"`
+    WalletAddress   string  `json:"wallet_address"`
+    Amount          float64 `json:"amount"`
+    IsSpent         bool    `json:"is_spent"`
+}
+2. CRYPTOGRAPHIC FUNCTIONS
+Generate RSA key pairs (2048-bit)
+
+SHA-256 hashing for blocks
+
+ECDSA signatures for transactions
+
+AES encryption for private keys in database
+
+Wallet ID generation: SHA256(public_key)[:64]
+
+3. PROOF-OF-WORK IMPLEMENTATION
+Difficulty starts at 4 leading zeros (0000...)
+
+Adjustable difficulty based on mining time
+
+Nonce iteration for hash calculation
+
+Target: hash < target (2^(256-difficulty))
+
+4. TRANSACTION VALIDATION RULES
+Verify digital signature matches sender's public key
+
+Check sender has sufficient balance (sum of UTXOs)
+
+Validate all UTXOs exist and are unspent
+
+Prevent double-spending
+
+Validate receiver wallet exists
+
+Calculate and verify transaction fee
+
+5. ZAKAT DEDUCTION SYSTEM
+Monthly scheduler runs on 1st of each month
+
+Calculate 2.5% of wallet balance
+
+Create zakat transaction to "ZAKAT_POOL" wallet
+
+Update UTXOs accordingly
+
+Log zakat deduction in system_logs
+
+6. API ENDPOINTS (RESTful)
+POST   /api/auth/register          # User registration
+POST   /api/auth/verify-otp        # OTP verification
+POST   /api/auth/login             # Login
+GET    /api/auth/profile           # Get profile
+
+POST   /api/wallet/create          # Create wallet
+GET    /api/wallet/balance         # Get balance (UTXO calculation)
+GET    /api/wallet/utxos           # List UTXOs
+GET    /api/wallet/transactions    # Transaction history
+
+POST   /api/transaction/send       # Send money
+POST   /api/transaction/validate   # Validate transaction
+GET    /api/transaction/pending    # Get pending transactions
+
+GET    /api/blockchain/blocks      # Get all blocks
+GET    /api/blockchain/latest      # Get latest block
+POST   /api/blockchain/mine        # Mine block
+GET    /api/blockchain/validate    # Validate chain
+
+POST   /api/beneficiary/add        # Add beneficiary
+GET    /api/beneficiary/list       # List beneficiaries
+
+GET    /api/reports/monthly        # Monthly report
+GET    /api/reports/zakat          # Zakat report
+GET    /api/logs/system            # System logs
+GET    /api/logs/transactions      # Transaction logs
+FRONTEND IMPLEMENTATION REQUIREMENTS
+1. PAGES & COMPONENTS
+Login Page: Email + OTP verification
+
+Register Page: Full registration with CNIC
+
+Dashboard: Balance, quick actions, recent transactions
+
+Wallet Profile: Public/private key display, wallet ID
+
+Send Money: Form with beneficiary selection, amount, note
+
+Block Explorer: Visual block chain with transaction details
+
+Transaction History: Filterable transaction list
+
+Reports Page: Monthly summaries, charts, zakat deductions
+
+Admin Panel: System monitoring, logs view
+
+2. KEY FEATURES
+Real-time balance updates using WebSocket
+
+QR code generation for wallet address
+
+Export transaction history as CSV
+
+Responsive design with Tailwind
+
+Dark/light mode toggle
+
+Form validation with React Hook Form
+
+State management with Zustand
+
+3. SECURITY FEATURES
+HTTPS only
+
+JWT token authentication
+
+Encrypted local storage for session
+
+Input sanitization
+
+Rate limiting on API calls
+
+XSS protection
+
+DEPLOYMENT CONFIGURATION
+1. BACKEND DEPLOYMENT (Fly.io)
+yaml
+# fly.toml
+app = "crypto-wallet-backend"
+primary_region = "iad"
+
+[env]
+  DATABASE_URL = "postgresql://..."
+  JWT_SECRET = "your-jwt-secret"
+  NODE_ENV = "production"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+  
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+  
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+2. FRONTEND DEPLOYMENT (Vercel)
+json
+// vercel.json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite-react"
+}
+3. ENVIRONMENT VARIABLES
+# Backend (.env)
+DATABASE_URL=postgresql://...
+SUPABASE_URL=https://...
+SUPABASE_ANON_KEY=...
+JWT_SECRET=...
+NODE_ENV=production
+PORT=8080
+ZAKAT_POOL_WALLET=...
+
+# Frontend (.env)
+VITE_API_URL=https://your-backend.fly.dev
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+TESTING REQUIREMENTS
+Unit tests for blockchain functions (85%+ coverage)
+
+Integration tests for API endpoints
+
+E2E tests for critical user flows
+
+Load testing for mining operations
+
+Security penetration testing
+
+DOCUMENTATION REQUIREMENTS
+README.md with:
+
+Project description
+
+Installation instructions
+
+API documentation
+
+Database schema diagram (Mermaid.js)
+
+Deployment guide
+
+API Documentation (OpenAPI/Swagger)
+
+Architecture decision records
+
+GITHUB REPOSITORY SETUP
+Initialize git repository
+
+Create proper .gitignore
+
+Set up GitHub Actions for CI/CD
+
+Add issue templates
+
+Create PR template
+
+Add CODEOWNERS file
+
+START BUILDING WITH THESE STEPS:
+First, create the database schema in Supabase
+
+Generate Go backend structure with all modules
+
+Implement blockchain core (block, transaction, UTXO)
+
+Add cryptographic functions
+
+Create API endpoints
+
+Build React frontend components
+
+Connect frontend to backend
+
+Implement real-time features
+
+Add testing
+
+Deploy to Fly.io and Vercel
+
+Create demo video
+
+Write research article
+
+CRITICAL NOTES:
+DO NOT use Docker anywhere in the project
+
+All private keys must be encrypted before storage
+
+Balance must always be calculated from UTXOs, not cached value
+
+Zakat deduction must happen automatically on 1st of each month
+
+Every transaction must be digitally signed
+
+All blocks must have Proof-of-Work validation
+
+Frontend must use only React + Tailwind (no other UI frameworks)
+
+Backend must be in Go (no alternatives)
+
+Database must be serverless (Supabase)
+
+ERROR HANDLING:
+Invalid wallet ID: Return 400 with "Invalid Wallet ID"
+
+Insufficient balance: Return 400 with "Insufficient balance"
+
+Invalid signature: Return 401 with "Invalid digital signature"
+
+Double-spend attempt: Return 400 with "UTXO already spent"
+
+Database errors: Log and return 500 with generic message

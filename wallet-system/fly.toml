@@ -1,0 +1,40 @@
+app = "crypto-wallet-backend"
+primary_region = "iad"
+
+[build]
+  builder = "paketobuildpacks"
+
+[env]
+  DATABASE_URL = "postgresql://your-connection-string"
+  SUPABASE_URL = "https://your-project.supabase.co"
+  SUPABASE_ANON_KEY = "your-anon-key"
+  SUPABASE_SERVICE_ROLE_KEY = "your-service-role-key"
+  JWT_SECRET = "your-jwt-secret-change-in-production"
+  ZAKAT_POOL_WALLET = "zakat_pool_address"
+  ZAKAT_PERCENTAGE = "2.5"
+  CORS_ALLOWED_ORIGINS = "https://your-frontend.vercel.app,http://localhost:5173"
+  LOG_LEVEL = "info"
+  LOG_FORMAT = "json"
+  NODE_ENV = "production"
+  PORT = "8080"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+  
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+[checks]
+  [checks.release]
+    type = "http"
+    interval = "10s"
+    timeout = "5s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/health"
