@@ -43,10 +43,11 @@ func main() {
 	// Setup routes
 	api.SetupRoutes(router, handler)
 
-	// Start server
+	// Start server: bind explicitly to 0.0.0.0 so PaaS like Render can detect the open port
 	port := cfg.Port
-	fmt.Printf("Starting server on port %s\n", port)
-	if err := router.Run(":" + port); err != nil {
+	addr := fmt.Sprintf("0.0.0.0:%s", port)
+	fmt.Printf("Starting server on %s\n", addr)
+	if err := router.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
